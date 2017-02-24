@@ -1,0 +1,29 @@
+{
+  "name": "expense-monitor",
+  "version": "1.0.0",
+  "description": "A activity monitor that helps keep track of expenses",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AdamJahur/Expense-Monitor.git"
+  },
+  "author": "Adam Jahur",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AdamJahur/Expense-Monitor/issues"
+  },
+  "homepage": "https://github.com/AdamJahur/Expense-Monitor#readme",
+  "dependencies": {
+    "body-parser": "^1.16.1",
+    "express": "^4.14.1",
+    "express-handlebars": "^3.0.0",
+    "moment": "^2.17.1",
+    "mysql": "^2.13.0",
+    "path": "^0.12.7",
+    "sequelize": "^3.30.2"
+  }
+}
