@@ -177,7 +177,202 @@ module.exports = function(app){
 	//=================================================================================
 	// Start getting aggregate data
 
+		var sum = 0;
 
+				var sumB = 0;
+		  		var sumL = 0;
+		  		var sumD = 0;
+		  		var sumO = 0;
+
+		  		var B = [];
+		  		var L = [];
+		  		var D = [];
+		  		var O = [];
+
+				var avgCostB = 0; //average cost of breakfasts
+				var avgCostL = 0; //average cost of lunch
+				var avgCostD = 0; //average cost of dinner
+				var avgCostO = 0; //average cost of other
+
+				var dateArrayB = [];
+				var dateArrayL = [];
+				var dateArrayD = [];
+				var dateArrayO = [];
+
+				var timeSpan = req.query.time; //length of time data (in days)
+
+				//console.log(timeSpan);
+
+				var now = moment(); //get the current date 
+				var beginTime = now.clone().subtract(timeSpan, 'days'); //calculate the start of the data retraieval time period
+				//console.log(now.format("MM/DD/YY") + " " + beginTime.format("MM/DD/YY")); //output the current and begin dates
+				C =0;
+				restCount = [];
+				visitedRestaurants = ["dummy"];
+				for(i=0;i<=timeSpan;i++){
+					restCount[i] = 0;
+				}
+
+				for (i=0;i<foodtable.length;i++){ //parse entire mysql foodtable
+					
+					var entryDate = moment(foodtable[i].dataValues.date);
+
+						
+						if(entryDate.isBefore(now) && entryDate.isAfter(beginTime)){ //only take table entries within time frame specified
+							sum += foodtable[i].dataValues.cost; //sum of all costs
+
+							if(foodtable[i].dataValues.whatmeal === 1){   //whatmeal = 1 is breakfast
+								sumB += foodtable[i].dataValues.cost; //sum of all breakfasts
+								B.push(foodtable[i].dataValues.cost); //array of all breakfasts
+								dateArrayB.push(entryDate);
+							}
+							else if(foodtable[i].dataValues.whatmeal === 2){ //whatmeal = 2 is lunch
+								sumL += foodtable[i].dataValues.cost; //sum of all lunches
+								L.push(foodtable[i].dataValues.cost); //array of all lunches
+								dateArrayL.push(entryDate);
+							}
+							else if(foodtable[i].dataValues.whatmeal === 3){ //whatmeal = 3 is dinner
+								sumD += foodtable[i].dataValues.cost; //sum of all dinners
+								D.push(foodtable[i].dataValues.cost); //array of all dinners
+								dateArrayD.push(entryDate);
+							}
+							else if(foodtable[i].dataValues.whatmeal === 0){ //whatmeal = 0 is other
+								sumO += foodtable[i].dataValues.cost; //sum of all other meals
+								O.push(foodtable[i].dataValues.cost); //array of all other meals
+								dateArrayO.push(entryDate);
+							}
+						
+							for(j=0;j<visitedRestaurants.length;j++){
+							//console.log("2")
+							if(foodtable[i].dataValues.restaurant == visitedRestaurants[j]){
+								//console.log("3")
+								C++;
+								restCount[j]++;
+								break;
+
+							}
+							
+						}
+						if(C == 0){
+							//console.log("4")
+							visitedRestaurants.push(foodtable[i].dataValues.restaurant);
+							restCount[visitedRestaurants.length-1]++;
+						}
+							C=0;
+						}
+
+				}
+
+				var ind = visitedRestaurants.indexOf('dummy')
+				if(ind >-1){
+					visitedRestaurants.splice(ind,1);
+				}
+
+
+				for(i=0;i<timeSpan; i++){
+					var ind2 = restCount.indexOf(0);
+					if(ind2>-1){
+						restCount.splice(ind2,1);
+					}
+				}
+
+				// console.log(visitedRestaurants);
+				// console.log(restCount);
+				
+				bubbleSort(restCount, visitedRestaurants);
+
+				// console.log(visitedRestaurants);
+				// console.log(restCount);
+
+				avgCostB = sumB/B.length;
+
+				avgCostL = sumL/L.length;
+				avgCostD = sumD/D.length;
+				avgCostO = sumO/O.length;
+
+				datesInTimeSpanB = [];
+				datesInTimeSpanL = [];
+				datesInTimeSpanD = [];
+				datesInTimeSpanO = [];
+
+				dailyAvgB = [];
+				dailyAvgL = [];
+				dailyAvgD = [];
+				dailyAvgO = [];
+
+				//console.log(dateArrayB);
+				for(i=1; i<=timeSpan;i++){
+
+					testDate = beginTime.clone().add(i,'days');
+					
+					var count = 0;
+					var total = 0;
+					for(j=0; j<dateArrayB.length;j++){
+
+						var compare = dateArrayB[j].clone().add(4, 'hours')
+
+						if(compare.isSame(testDate, 'day')){
+							count ++;
+							total += B[j];
+						}
+						//console.log("difference " + dateArrayB[j].diff(testDate) );
+						//console.log("difference2 " + testDate.diff(dateArrayB[j]));
+						//console.log("date " + dateArrayB[j].format("MM/DD/YY"));
+						//console.log(dateArrayB[j].isSame(testDate, 'day'))
+						//console.log("test date " + testDate.format("MM/DD/YY"));
+						//console.log("current " + dateArrayB[j].format("MM/DD/YY"));	
+					}
+
+					//console.log("total " + total);
+					//console.log("count " + count);
+					dailyAvgB[i] = (total/count);
+					datesInTimeSpanB[i] = (testDate.format("MM/DD/YY"));
+					//console.log("in array " + testDate.format("MM/DD/YY"));
+					//console.log("========================");
+
+				}
+				//console.log(dailyAvgB);
+				//console.log(datesInTimeSpanB);
+
+				for(i=1; i<=timeSpan;i++){
+
+					testDate = beginTime.clone().add(i,'days');
+					var count = 0;
+					var total = 0;
+					for(j=0; j<dateArrayL.length;j++){
+
+						var compare = dateArrayL[j].clone().add(4,'hours')
+						if(compare.isSame(testDate, 'day')){
+							count ++;
+							total += L[j];
+						}				
+					}
+					dailyAvgL.push(total/count);
+					datesInTimeSpanL.push(testDate.format("MM/DD/YY"));
+				}
+				//console.log(dailyAvgL);
+				//console.log(datesInTimeSpanL);
+
+				for(i=1; i<=timeSpan;i++){
+
+					testDate = beginTime.clone().add(i,'days');
+					var count = 0;
+					var total = 0;
+					for(j=0; j<dateArrayD.length;j++){
+						var compare = dateArrayD[j].clone().add(4,'hours')
+						if(compare.isSame(testDate, 'day')){
+							count ++;
+							total += D[j];
+						}				
+					}
+					dailyAvgD.push(total/count);
+					datesInTimeSpanD.push(testDate.format("MM/DD/YY"));
+				}
+				//console.log(dailyAvgD);
+				//console.log(datesInTimeSpanD);
+
+				
+				
 
 		})
 	})
