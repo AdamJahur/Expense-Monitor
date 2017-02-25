@@ -371,9 +371,102 @@ module.exports = function(app){
 				//console.log(dailyAvgD);
 				//console.log(datesInTimeSpanD);
 
+				for(i=1; i<=timeSpan;i++){
+
+					testDate = beginTime.clone().add(i,'days');
+					var count = 0;
+					var total = 0;
+					for(j=0; j<dateArrayO.length;j++){
+						var compare = dateArrayO[j].clone().add(4,'hours')
+						if(compare.isSame(testDate, 'day')){
+							count ++;
+							total += O[j];
+						}				
+					}
+					dailyAvgO.push(total/count);
+					datesInTimeSpanO.push(testDate.format("MM/DD/YY"));
+				}
+				//console.log(dailyAvgO);
+				//console.log(datesInTimeSpanO);
+
+
+				var aggregateData = {
+					avgCost : [avgCostO, avgCostB, avgCostL, avgCostD],
+					sumTotal : [sumO, sumB, sumL, sumD],
+					arrayMeals : [O, B, L, D],
+					dateArrays : [dateArrayO,dateArrayB,dateArrayL,dateArrayD],
+					dailyAvgCost : [dailyAvgO, dailyAvgB, dailyAvgL, dailyAvgD],
+					dailyAvgDates : datesInTimeSpanO,
+					allRestaurants : visitedRestaurants,
+					allRestcount : restCount
+				}
+				
+				//console.log(sum + ' ' + avgCostB + ' ' + avgCostL + ' ' + avgCostD + ' ' + avgCostO);
+				//console.log(B + ' ' + L + ' ' + D + ' ' + O)
+				
+				var data = {
+					oneUserData : userData,
+					allUserData : aggregateData
+				}
 				
 				
+				res.json(data);
 
 		})
+	});
+
+//=======================
+//This code will check if there is a new user registering with a username that is not yet
+//in the database.
+//If true come back then the username already exists otherwise false comes back
+//signifying that the username can be used.  The table is NOT changed at this point but the new user
+//is allowed to input a meal.
+//=================================
+app.post('/register',function (req, res) {
+	// console.log("Inside register route");
+  	sequelTableModel.findAll({
+  	})
+  	.then(function(foodtable){
+		//***************** var newUser = req.query.username;
+		// console.log(req);
+		// console.log('req.body.userName',req.body.userName);
+		var newUser = req.body.userName;
+		var password = req.body.password;
+		// console.log('username='+newUser);
+		var userexists = false;
+		for (i=0;i<foodtable.length;i++){
+			if(foodtable[i].dataValues.username==newUser&& foodtable[i].dataValues.password==password){
+				userexists = true;
+				break;
+			}
+			// console.log(foodtable[i].dataValues.username)
+			// console.log(foodtable[i].dataValues.password)
+		}
+		// console.log(newUser);
+		// console.log(password);
+
+		res.send(userexists);//returns true or false.  false means the user doesn't exist.
 	})
-}
+	
+});
+
+//adds a new item to the table.
+//=======================
+		app.post('/add',function (req, res) {
+				sequelTableModel.create({
+					username : req.body.username,
+					password : req.body.password,
+					restaurant : req.body.restaurant,
+					description : req.body.description,
+					whatmeal : req.body.whatmeal,
+					cost : req.body.cost,
+					date : req.body.date
+					})
+				.then(function(){
+				// console.log("after /add");
+				res.end();
+				// res.redirect(307,'/userdata?time='+30+"&userName="+req.body.username)
+			  })
+		});
+//==================
+};//close module.export
