@@ -13,17 +13,17 @@ var source = {
         port: 3306,
         host: 'localhost',
         user: 'root',
-        password: "",
-        database: "food_db"
+        password: '',
+        database: 'food_db'
     },
 //after we deploy to heroku and add the jawsDB then we can add the missing data here:
 
 	jawsDB: {
 		port: 3306,
-		host:'',
-		user:'',
-		password:'',
-		database:'',
+		host:'gk90usy5ik2otcvi.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
+		user:'d2pmatsm8842vzhj',
+		password:'xvqjee96zhnudvn2',
+		database:'food_db',
 	}
 }
 
